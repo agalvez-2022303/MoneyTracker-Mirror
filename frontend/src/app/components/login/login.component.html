@@ -29,8 +29,18 @@
     <form class="login__tarjeta" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
       <header class="login__header">
         <h2 class="login__h2">Iniciar sesión</h2>
-        <p class="login__desc">Acceda con su cuenta de Money Tracker</p>
+        <p class="login__desc">Acceda con su cuenta de Google o de Money Tracker</p>
       </header>
+
+      <div
+        #botonGoogle
+        class="login__google"
+        [class.login__google--deshabilitado]="enviando()"
+      ></div>
+
+      <div class="login__divisor">
+        <span>o</span>
+      </div>
 
       <div class="login__campo">
         <label class="login__label" for="email">Correo electrónico</label>
@@ -89,16 +99,6 @@
           <svg lucideArrowRight size="16"></svg>
         }
       </button>
-
-      <div class="login__divisor">
-        <span>o</span>
-      </div>
-
-      <div
-        #botonGoogle
-        class="login__google"
-        [class.login__google--deshabilitado]="enviando()"
-      ></div>
     </form>
   </div>
 </div>
