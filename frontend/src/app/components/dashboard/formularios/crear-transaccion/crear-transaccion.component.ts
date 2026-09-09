@@ -78,11 +78,10 @@ export class CrearTransaccionComponent {
       const otro = this.formulario.controls.categoriaOtro;
       if (v === 'otro') {
         otro.enable();
-        otro.setValidators([Validators.required]);
       } else {
         otro.disable();
-        otro.clearValidators();
       }
+      otro.clearValidators();
       otro.updateValueAndValidity();
     });
     this.formulario.controls.categoria.updateValueAndValidity();
@@ -136,7 +135,7 @@ export class CrearTransaccionComponent {
         ...(esCuenta ? { cuenta_id: destinoId } : { meta_id: destinoId }),
         moneda_original: v.moneda,
         tasa_cambio_usada: this.tasaActual(),
-        categoria: v.categoria === 'otro' ? v.categoriaOtro.trim() : v.categoria,
+        categoria: v.categoria === 'otro' ? (v.categoriaOtro.trim() || 'otro') : v.categoria,
         descripcion: limpiarTexto(v.descripcion),
       })
       .subscribe({

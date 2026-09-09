@@ -1,0 +1,299 @@
+<div class="min-h-dvh w-full overflow-x-hidden bg-[#121214] text-[#F5F5F5]">
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-[#121214]/90 backdrop-blur">
+    <nav class="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
+      <div class="flex items-center gap-3 text-xs font-medium sm:gap-6 sm:text-[13px]">
+        <a routerLink="/dashboard" class="flex items-center gap-1.5 text-[#9CA3AF] transition-colors hover:text-[#22E27A]">
+          <svg lucideArrowLeft size="15"></svg>
+          Inicio
+        </a>
+        <a routerLink="/historial" class="hidden text-[#9CA3AF] transition-colors hover:text-[#22E27A] sm:inline">Historial</a>
+        <span class="text-[#22E27A]">Estadisticas</span>
+        <a routerLink="/configuracion" class="text-[#9CA3AF] transition-colors hover:text-[#22E27A]">Configuracion</a>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button
+          type="button"
+          (click)="cerrarSesion()"
+          [disabled]="saliendo()"
+          class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#22E27A] px-4 py-2 text-xs font-semibold text-[#121214] disabled:opacity-60 sm:px-5 sm:text-[13px]"
+        >
+          @if (saliendo()) {
+            <span class="dash-spinner"></span>
+          } @else {
+            <svg lucideLogOut size="15"></svg>
+          }
+          Cerrar sesion
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="mx-auto w-full max-w-5xl px-6 py-10">
+    @let d = data();
+    <h1 class="text-2xl font-bold tracking-tight">Estadisticas</h1>
+    <p class="mt-1 text-[13px] text-[#9CA3AF]">
+      Distribución de sus cuentas y avance de sus metas de ahorro.
+    </p>
+
+    @if (cargando()) {
+      <div class="flex flex-col items-center justify-center gap-3 py-24 text-[#9CA3AF]">
+        <span class="dash-spinner dash-spinner--claro"></span>
+        <span class="text-sm">Cargando estadísticas…</span>
+      </div>
+    } @else if (error()) {
+      <div class="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <p class="text-sm text-[#9CA3AF]">{{ error() }}</p>
+        <button
+          type="button"
+          (click)="cargar()"
+          class="rounded-full bg-[#22E27A] px-5 py-2 text-[13px] font-semibold text-[#121214]"
+        >
+          Reintentar
+        </button>
+      </div>
+    } @else if (d) {
+      <section class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <article class="rounded-2xl bg-[#1C1C1F] p-5">
+          <span class="flex size-10 items-center justify-center rounded-full bg-[#22E27A]/15">
+            <svg lucideWallet size="18" class="text-[#22E27A]"></svg>
+          </span>
+          <h2 class="mt-3 text-[10px] font-medium uppercase tracking-[0.14em] text-[#9CA3AF]">
+            Dinero total
+          </h2>
+          <p class="mt-1 text-2xl font-bold">{{ formatearMonto(d.dineroTotal) }}</p>
+        </article>
+
+        <article class="rounded-2xl bg-[#1C1C1F] p-5">
+          <span class="flex size-10 items-center justify-center rounded-full bg-[#8B5CF6]/15">
+            <svg lucideTarget size="18" class="text-[#A78BFA]"></svg>
+          </span>
+          <h2 class="mt-3 text-[10px] font-medium uppercase tracking-[0.14em] text-[#9CA3AF]">
+            Total ahorrado
+          </h2>
+          <p class="mt-1 text-2xl font-bold">{{ formatearMonto(d.totalAhorrado) }}</p>
+        </article>
+
+        <article class="rounded-2xl bg-[#1C1C1F] p-5">
+          <span class="flex size-10 items-center justify-center rounded-full bg-white/5">
+            <svg lucideArrowDown size="18" class="text-[#22E27A]"></svg>
+          </span>
+          <h2 class="mt-3 text-[10px] font-medium uppercase tracking-[0.14em] text-[#9CA3AF]">
+            Balance del mes
+          </h2>
+          <p class="mt-1 text-2xl font-bold" [style.color]="balance >= 0 ? '#22E27A' : '#EF4444'">
+            {{ formatearMonto(balance) }}
+          </p>
+        </article>
+      </section>
+
+      <section class="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <!-- ── Cuentas ── -->
+        <article class="rounded-2xl bg-[#1C1C1F] p-5">
+          <div class="flex items-center gap-3">
+            <span class="flex size-10 items-center justify-center rounded-full bg-[#22E27A]/15">
+              <svg lucideWallet size="18" class="text-[#22E27A]"></svg>
+            </span>
+            <div>
+              <h2 class="text-sm font-semibold">Distribución de cuentas</h2>
+              <p class="text-xs text-[#9CA3AF]">Saldo de cada cuenta respecto al total.</p>
+            </div>
+          </div>
+
+          @if (cuentas === 0) {
+            <div class="flex flex-col items-center gap-2 py-14 text-center">
+              <p class="text-sm text-[#9CA3AF]">Aún no tiene cuentas.</p>
+              <a routerLink="/dashboard" class="text-[13px] font-semibold text-[#22E27A] hover:underline">
+                Crear una cuenta en el panel
+              </a>
+            </div>
+          } @else {
+            <div class="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div class="relative size-44 shrink-0">
+                <svg class="size-full" viewBox="0 0 200 200" role="img" aria-label="Gráfica circular de cuentas">
+                  <circle cx="100" cy="100" r="84" fill="none" stroke="#2A2A2E" stroke-width="16" pathLength="100" />
+                  @for (s of segmentosCuentas; track s.id) {
+                    <circle
+                      cx="100" cy="100" r="84"
+                      fill="none"
+                      [attr.stroke]="s.color"
+                      stroke-width="16"
+                      pathLength="100"
+                      [attr.stroke-dasharray]="s.dasharray"
+                      [attr.stroke-dashoffset]="s.dashoffset"
+                      transform="rotate(-90 100 100)"
+                    />
+                    <circle
+                      cx="100" cy="100" r="84"
+                      fill="none" stroke="transparent"
+                      stroke-width="26"
+                      pathLength="100"
+                      [attr.stroke-dasharray]="s.dasharray"
+                      [attr.stroke-dashoffset]="s.dashoffset"
+                      transform="rotate(-90 100 100)"
+                      class="donut-slice"
+                      [attr.aria-label]="s.nombre + ' ' + redondear(s.pct) + '%'"
+                      (mouseenter)="alPasarCuenta(s)"
+                      (mouseleave)="alSalirCuenta()"
+                      (focus)="alPasarCuenta(s)"
+                      (blur)="alSalirCuenta()"
+                      tabindex="0"
+                    />
+                  }
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center px-7 text-center">
+                  @if (seleccionCuenta(); as sel) {
+                    <span class="w-full truncate text-[10px] font-medium uppercase tracking-[0.14em] text-[#9CA3AF]">
+                      {{ sel.nombre }}
+                    </span>
+                    <span class="mt-1 w-full truncate text-2xl font-bold">{{ formatearMonto(sel.valor) }}</span>
+                    <span
+                      class="mt-2 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                      [style.background]="sel.color + '26'"
+                      [style.color]="sel.color"
+                    >
+                      {{ redondear(sel.pct) }}%
+                    </span>
+                  } @else {
+                    <span class="text-[10px] font-medium uppercase tracking-[0.16em] text-[#9CA3AF]">
+                      Dinero total
+                    </span>
+                    <span class="mt-1 text-2xl font-bold">{{ formatearMonto(totalCuentas) }}</span>
+                    <span class="mt-2 rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] font-semibold text-[#9CA3AF]">
+                      {{ cuentas }} {{ cuentas === 1 ? 'cuenta' : 'cuentas' }}
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <ul class="flex w-full flex-col gap-2">
+                @for (s of segmentosCuentas; track s.id) {
+                  <li
+                    class="flex items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors"
+                    [class]="
+                      seleccionCuenta()?.id === s.id
+                        ? 'border-white/20 bg-white/5'
+                        : 'border-white/5 hover:border-white/10'
+                    "
+                    (mouseenter)="alPasarCuenta(s)"
+                    (mouseleave)="alSalirCuenta()"
+                  >
+                    <span class="size-2.5 shrink-0 rounded-full" [style.background]="s.color"></span>
+                    <span class="truncate text-[#F5F5F5]">{{ s.nombre }}</span>
+                    <span class="ml-auto shrink-0 text-xs text-[#9CA3AF]">{{ redondear(s.pct) }}%</span>
+                    <span class="w-20 shrink-0 text-right text-xs font-semibold">
+                      {{ formatearMonto(s.valor) }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </article>
+
+        <!-- ── Metas ── -->
+        <article class="rounded-2xl bg-[#1C1C1F] p-5">
+          <div class="flex items-center gap-3">
+            <span class="flex size-10 items-center justify-center rounded-full bg-[#8B5CF6]/15">
+              <svg lucideTarget size="18" class="text-[#A78BFA]"></svg>
+            </span>
+            <div>
+              <h2 class="text-sm font-semibold">Avance de metas</h2>
+              <p class="text-xs text-[#9CA3AF]">Cuánto ha ahorrado por cada meta.</p>
+            </div>
+          </div>
+
+          @if (metas === 0) {
+            <div class="flex flex-col items-center gap-2 py-14 text-center">
+              <p class="text-sm text-[#9CA3AF]">Aún no tiene metas.</p>
+              <a routerLink="/dashboard" class="text-[13px] font-semibold text-[#22E27A] hover:underline">
+                Crear una meta en el panel
+              </a>
+            </div>
+          } @else {
+            <div class="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div class="relative size-44 shrink-0">
+                <svg class="size-full" viewBox="0 0 200 200" role="img" aria-label="Gráfica circular de metas">
+                  <circle cx="100" cy="100" r="84" fill="none" stroke="#2A2A2E" stroke-width="16" pathLength="100" />
+                  @for (s of segmentosMetas; track s.id) {
+                    <circle
+                      cx="100" cy="100" r="84"
+                      fill="none"
+                      [attr.stroke]="s.color"
+                      stroke-width="16"
+                      pathLength="100"
+                      [attr.stroke-dasharray]="s.dasharray"
+                      [attr.stroke-dashoffset]="s.dashoffset"
+                      transform="rotate(-90 100 100)"
+                    />
+                    <circle
+                      cx="100" cy="100" r="84"
+                      fill="none" stroke="transparent"
+                      stroke-width="26"
+                      pathLength="100"
+                      [attr.stroke-dasharray]="s.dasharray"
+                      [attr.stroke-dashoffset]="s.dashoffset"
+                      transform="rotate(-90 100 100)"
+                      class="donut-slice"
+                      [attr.aria-label]="s.nombre + ' ' + redondear(s.pct) + '%'"
+                      (mouseenter)="alPasarMeta(s)"
+                      (mouseleave)="alSalirMeta()"
+                      (focus)="alPasarMeta(s)"
+                      (blur)="alSalirMeta()"
+                      tabindex="0"
+                    />
+                  }
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center px-7 text-center">
+                  @if (seleccionMeta(); as sel) {
+                    <span class="w-full truncate text-[10px] font-medium uppercase tracking-[0.14em] text-[#9CA3AF]">
+                      {{ sel.nombre }}
+                    </span>
+                    <span class="mt-1 w-full truncate text-2xl font-bold">{{ formatearMonto(sel.valor) }}</span>
+                    <span
+                      class="mt-2 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                      [style.background]="sel.color + '26'"
+                      [style.color]="sel.color"
+                    >
+                      {{ sel.detalle }}
+                    </span>
+                  } @else {
+                    <span class="text-[10px] font-medium uppercase tracking-[0.16em] text-[#9CA3AF]">
+                      Total ahorrado
+                    </span>
+                    <span class="mt-1 text-2xl font-bold">{{ formatearMonto(totalAhorrado) }}</span>
+                    <span class="mt-2 rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] font-semibold text-[#9CA3AF]">
+                      {{ metas }} {{ metas === 1 ? 'meta' : 'metas' }}
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <ul class="flex w-full flex-col gap-2">
+                @for (s of segmentosMetas; track s.id) {
+                  <li
+                    class="flex items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors"
+                    [class]="
+                      seleccionMeta()?.id === s.id
+                        ? 'border-white/20 bg-white/5'
+                        : 'border-white/5 hover:border-white/10'
+                    "
+                    (mouseenter)="alPasarMeta(s)"
+                    (mouseleave)="alSalirMeta()"
+                  >
+                    <span class="size-2.5 shrink-0 rounded-full" [style.background]="s.color"></span>
+                    <span class="truncate text-[#F5F5F5]">{{ s.nombre }}</span>
+                    <span class="ml-auto shrink-0 text-xs text-[#9CA3AF]">{{ redondear(s.pct) }}%</span>
+                    <span class="w-24 shrink-0 text-right text-xs font-semibold">
+                      {{ formatearMonto(s.valor) }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </article>
+      </section>
+    }
+  </main>
+</div>

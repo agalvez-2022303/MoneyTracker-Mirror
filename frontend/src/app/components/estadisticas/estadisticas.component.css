@@ -1,0 +1,23 @@
+.dash-spinner--claro {
+  width: 18px;
+  height: 18px;
+  border-color: rgba(154, 163, 175, 0.25);
+  border-top-color: #22e27a;
+}
+
+.donut-slice {
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.15s ease;
+}
+
+.donut-slice:hover,
+.donut-slice:focus-visible {
+  opacity: 0.85;
+}
+
+@media (hover: none) {
+  .donut-slice {
+    cursor: default;
+  }
+}
