@@ -60,15 +60,59 @@ function validarTextoOpcional(valor: unknown, campo: string): string | null | un
   return valor.trim() === '' ? null : valor.trim();
 }
 
+function validarFecha(valor: unknown, campo: string): string | undefined {
+  if (valor === undefined || valor === null || valor === '') return undefined;
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor.trim())) {
+    throw new BadRequestError(`El campo "${campo}" debe ser una fecha (AAAA-MM-DD)`);
+  }
+  const fecha = new Date(`${valor.trim()}T00:00:00Z`);
+  if (Number.isNaN(fecha.getTime())) {
+    throw new BadRequestError(`El campo "${campo}" debe ser una fecha válida`);
+  }
+  return valor.trim();
+}
+
+function validarBusqueda(valor: unknown): string | undefined {
+  if (valor === undefined || valor === null || valor === '') return undefined;
+  if (typeof valor !== 'string') {
+    throw new BadRequestError('El campo "busqueda" debe ser texto');
+  }
+  const texto = valor.trim();
+  if (texto.length === 0) return undefined;
+  if (texto.length > 80) {
+    throw new BadRequestError('La búsqueda no puede exceder 80 caracteres');
+  }
+  return texto;
+}
+
+function validarOffset(valor: unknown): number | undefined {
+  if (valor === undefined || valor === null || valor === '') return undefined;
+  const parsed = Number.parseInt(String(valor), 10);
+  if (Number.isNaN(parsed) || parsed < 0) {
+    throw new BadRequestError('El campo "offset" debe ser un entero no negativo');
+  }
+  return parsed;
+}
+
 export const listar = asyncHandler(async (req: Request, res: Response) => {
   const tipo = req.query.tipo as string | undefined;
   const limit = req.query.limit !== undefined ? parsePositiveInt(req.query.limit, 'limit') : undefined;
 
-  const transacciones = await transaccionesService.listar(usuarioId(req), {
+  const filtro = {
     tipo: tipo !== undefined ? validarTipo(tipo) : undefined,
     limit,
-  });
-  res.json({ transacciones });
+    categoria: validarTextoOpcional(req.query.categoria, 'categoria') ?? undefined,
+    desde: validarFecha(req.query.desde, 'desde'),
+    hasta: validarFecha(req.query.hasta, 'hasta'),
+    busqueda: validarBusqueda(req.query.busqueda),
+    offset: validarOffset(req.query.offset),
+  };
+
+  const [transacciones, resumen] = await Promise.all([
+    transaccionesService.listar(usuarioId(req), filtro),
+    transaccionesService.resumir(usuarioId(req), filtro),
+  ]);
+  res.json({ transacciones, resumen });
 });
 
 export const obtenerPorId = asyncHandler(async (req: Request, res: Response) => {

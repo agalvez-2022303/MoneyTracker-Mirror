@@ -4,6 +4,7 @@ export interface UsuarioRow {
   id: number;
   email: string;
   password_hash: string | null;
+  nombre: string | null;
   rol: 'admin' | 'cliente';
   created_at: Date;
   updated_at: Date;
@@ -12,12 +13,14 @@ export interface UsuarioRow {
 export interface NuevoUsuario {
   email: string;
   password_hash?: string | null;
+  nombre?: string | null;
   rol: 'admin' | 'cliente';
 }
 
 export interface ActualizarUsuario {
   email?: string;
   password_hash?: string;
+  nombre?: string | null;
   rol?: 'admin' | 'cliente';
 }
 
@@ -38,10 +41,10 @@ export async function findByEmail(email: string): Promise<UsuarioRow | undefined
 
 export async function create(datos: NuevoUsuario): Promise<UsuarioRow> {
   const { rows } = await query<UsuarioRow>(
-    `INSERT INTO usuarios (email, password_hash, rol)
-     VALUES ($1, $2, $3)
+    `INSERT INTO usuarios (email, password_hash, nombre, rol)
+     VALUES ($1, $2, $3, $4)
      RETURNING *`,
-    [datos.email, datos.password_hash ?? null, datos.rol],
+    [datos.email, datos.password_hash ?? null, datos.nombre ?? null, datos.rol],
   );
   return rows[0];
 }
@@ -58,6 +61,10 @@ export async function update(id: number, datos: ActualizarUsuario): Promise<Usua
   if (datos.password_hash !== undefined) {
     sets.push(`password_hash = $${index++}`);
     values.push(datos.password_hash);
+  }
+  if (datos.nombre !== undefined) {
+    sets.push(`nombre = $${index++}`);
+    values.push(datos.nombre);
   }
   if (datos.rol !== undefined) {
     sets.push(`rol = $${index++}`);

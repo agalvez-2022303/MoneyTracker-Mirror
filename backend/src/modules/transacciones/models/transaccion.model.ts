@@ -34,12 +34,48 @@ export interface NuevaTransaccion {
 
 export interface TransaccionFiltro {
   tipo?: TipoTransaccion;
+  categoria?: string;
+  desde?: string;
+  hasta?: string;
+  busqueda?: string;
   limit?: number;
+  offset?: number;
 }
 
 export interface ResumenMes {
   ingreso: number;
   egreso: number;
+}
+
+function construirFiltros(usuarioId: number, filtro: TransaccionFiltro): { condiciones: string[]; values: unknown[]; nextIndex: number } {
+  const condiciones: string[] = ['usuario_id = $1'];
+  const values: unknown[] = [usuarioId];
+  let index = 2;
+
+  if (filtro.tipo !== undefined) {
+    condiciones.push(`tipo = $${index++}`);
+    values.push(filtro.tipo);
+  }
+  if (filtro.categoria !== undefined && filtro.categoria !== '') {
+    condiciones.push(`LOWER(categoria) = LOWER($${index++})`);
+    values.push(filtro.categoria);
+  }
+  if (filtro.desde) {
+    condiciones.push(`created_at::date >= $${index++}::date`);
+    values.push(filtro.desde);
+  }
+  if (filtro.hasta) {
+    condiciones.push(`created_at::date <= $${index++}::date`);
+    values.push(filtro.hasta);
+  }
+  if (filtro.busqueda) {
+    const patron = `%${filtro.busqueda}%`;
+    condiciones.push(`(LOWER(nombre) LIKE $${index} OR LOWER(COALESCE(descripcion, '')) LIKE $${index})`);
+    values.push(patron);
+    index++;
+  }
+
+  return { condiciones, values, nextIndex: index };
 }
 
 export async function sumMesPorTipo(usuarioId: number): Promise<ResumenMes> {
@@ -58,20 +94,34 @@ export async function sumMesPorTipo(usuarioId: number): Promise<ResumenMes> {
   return resumen;
 }
 
-export async function findAllByUsuario(usuarioId: number, filtro: TransaccionFiltro = {}): Promise<TransaccionRow[]> {
-  const condiciones: string[] = ['usuario_id = $1'];
-  const values: unknown[] = [usuarioId];
-  let index = 2;
-
-  if (filtro.tipo !== undefined) {
-    condiciones.push(`tipo = $${index++}`);
-    values.push(filtro.tipo);
+export async function sumarPorFiltro(usuarioId: number, filtro: TransaccionFiltro = {}): Promise<ResumenMes> {
+  const { condiciones, values } = construirFiltros(usuarioId, filtro);
+  const { rows } = await query<{ tipo: TipoTransaccion; total: string }>(
+    `SELECT tipo, COALESCE(SUM(monto_gtq), 0)::text AS total
+     FROM transacciones
+     WHERE ${condiciones.join(' AND ')}
+     GROUP BY tipo`,
+    values,
+  );
+  const resumen: ResumenMes = { ingreso: 0, egreso: 0 };
+  for (const fila of rows) {
+    resumen[fila.tipo] = Number(fila.total);
   }
+  return resumen;
+}
+
+export async function findAllByUsuario(usuarioId: number, filtro: TransaccionFiltro = {}): Promise<TransaccionRow[]> {
+  const { condiciones, values, nextIndex } = construirFiltros(usuarioId, filtro);
+  let index = nextIndex;
 
   const limit = Math.min(filtro.limit ?? 100, 500);
   values.push(limit);
+  const offset = Math.max(0, filtro.offset ?? 0);
+  values.push(offset);
+
   const { rows } = await query<TransaccionRow>(
-    `SELECT * FROM transacciones WHERE ${condiciones.join(' AND ')} ORDER BY created_at DESC, id DESC LIMIT $${index}`,
+    `SELECT * FROM transacciones WHERE ${condiciones.join(' AND ')}
+     ORDER BY created_at DESC, id DESC LIMIT $${index} OFFSET $${index + 1}`,
     values,
   );
   return rows;

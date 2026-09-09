@@ -129,10 +129,17 @@ async function aplicarEfecto(
 
 export async function listar(
   usuarioId: number,
-  filtro: { tipo?: transaccionModel.TipoTransaccion; limit?: number } = {},
+  filtro: transaccionModel.TransaccionFiltro = {},
 ): Promise<TransaccionPublica[]> {
   const rows = await transaccionModel.findAllByUsuario(usuarioId, filtro);
   return rows.map(toTransaccionPublica);
+}
+
+export async function resumir(
+  usuarioId: number,
+  filtro: transaccionModel.TransaccionFiltro = {},
+): Promise<transaccionModel.ResumenMes> {
+  return transaccionModel.sumarPorFiltro(usuarioId, filtro);
 }
 
 export async function obtenerPorId(usuarioId: number, id: number): Promise<TransaccionPublica> {

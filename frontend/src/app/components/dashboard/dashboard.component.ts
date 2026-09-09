@@ -1,25 +1,14 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import type { LucideIcon } from '@lucide/angular';
 import {
   LucideArrowDown,
   LucideArrowUp,
-  LucideCar,
-  LucideDroplets,
   LucideDynamicIcon,
   LucideEye,
   LucideEyeOff,
-  LucideGamepad2,
-  LucideGraduationCap,
-  LucideHeartPulse,
-  LucideLandmark,
   LucideLogOut,
-  LucideShoppingCart,
   LucideUser,
-  LucideUtensils,
-  LucideWallet,
-  LucideWifi,
-  LucideZap,
 } from '@lucide/angular';
 import { AuthService } from '../../services/auth.service';
 import {
@@ -27,6 +16,7 @@ import {
   type DashboardData,
   type MetaResumen,
 } from '../../services/dashboard.service';
+import { iconoCategoria } from '../../utils/categorias';
 import { FabMenuComponent } from '../dashboard/fab-menu/fab-menu.component';
 import { CrearMetaComponent } from '../dashboard/formularios/crear-meta/crear-meta.component';
 import { CrearCuentaComponent } from '../dashboard/formularios/crear-cuenta/crear-cuenta.component';
@@ -34,39 +24,12 @@ import { CrearTransaccionComponent } from '../dashboard/formularios/crear-transa
 
 const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
 
-const ICONOS_CATEGORIA: Record<string, LucideIcon> = {
-  alimentacion: LucideShoppingCart,
-  'alimentación': LucideShoppingCart,
-  comida: LucideShoppingCart,
-  supermercado: LucideShoppingCart,
-  restaurante: LucideUtensils,
-  transporte: LucideCar,
-  'transporte publico': LucideCar,
-  'transporte público': LucideCar,
-  gasolina: LucideCar,
-  servicios: LucideZap,
-  luz: LucideZap,
-  agua: LucideDroplets,
-  internet: LucideWifi,
-  salud: LucideHeartPulse,
-  entretenimiento: LucideGamepad2,
-  educacion: LucideGraduationCap,
-  'educación': LucideGraduationCap,
-  salario: LucideWallet,
-  sueldo: LucideWallet,
-  nomina: LucideWallet,
-  'nómina': LucideWallet,
-  renta: LucideLandmark,
-  vivienda: LucideLandmark,
-};
-
-const ICONO_DEFECTO = LucideShoppingCart;
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     RouterLink,
+    RouterLinkActive,
     LucideDynamicIcon,
     LucideArrowDown,
     LucideArrowUp,
@@ -153,7 +116,7 @@ export class DashboardComponent implements OnInit {
   }
 
   iconoCategoria(categoria: string): LucideIcon {
-    return ICONOS_CATEGORIA[(categoria ?? '').trim().toLowerCase()] ?? ICONO_DEFECTO;
+    return iconoCategoria(categoria);
   }
 
   puntosSparkline(tendencia: 'sube' | 'baja'): string {

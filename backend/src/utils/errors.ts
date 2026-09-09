@@ -35,3 +35,10 @@ export class UnauthorizedError extends AppError {
     this.name = 'UnauthorizedError';
   }
 }
+
+export class ForbiddenError extends AppError {
+  constructor(message = 'Prohibido') {
+    super(403, message);
+    this.name = 'ForbiddenError';
+  }
+}

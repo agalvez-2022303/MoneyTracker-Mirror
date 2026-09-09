@@ -5,12 +5,13 @@ CREATE TABLE IF NOT EXISTS usuarios (
   id            SERIAL PRIMARY KEY,
   email         TEXT NOT NULL UNIQUE,
   password_hash TEXT,
+  nombre        TEXT,
   rol           TEXT NOT NULL DEFAULT 'cliente' CHECK (rol IN ('admin', 'cliente')),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Migración idempotente para tablas existentes con password_hash NOT NULL
+-- Migraciones idempotentes para tablas existentes
 DO $$
 BEGIN
   IF EXISTS (
@@ -21,6 +22,8 @@ BEGIN
   ) THEN
     ALTER TABLE usuarios ALTER COLUMN password_hash DROP NOT NULL;
   END IF;
+
+  ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nombre TEXT;
 END $$;
 
 CREATE TABLE IF NOT EXISTS cuentas (

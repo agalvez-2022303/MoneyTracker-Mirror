@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import * as authController from '../controllers/auth.controller';
+import { requireAuth } from '../../../middleware/auth.middleware';
 
 const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -24,5 +25,6 @@ router.post('/login', loginRateLimiter, authController.login);
 router.post('/google', googleRateLimiter, authController.googleLogin);
 router.post('/refresh', authController.refresh);
 router.post('/logout', authController.logout);
+router.post('/sesiones/cerrar', requireAuth, authController.cerrarTodasSesiones);
 
 export default router;

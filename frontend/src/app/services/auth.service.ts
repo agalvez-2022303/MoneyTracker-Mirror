@@ -5,6 +5,7 @@ import { Observable, catchError, map, of } from 'rxjs';
 export interface UsuarioSesion {
   id: number;
   email: string;
+  nombre: string | null;
   rol: string;
   createdAt: string;
 }

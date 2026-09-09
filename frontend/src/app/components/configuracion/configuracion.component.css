@@ -1,0 +1,8 @@
+:host { display: block; }
+
+.dash-spinner--claro {
+  width: 18px;
+  height: 18px;
+  border-color: rgba(154, 163, 175, 0.25);
+  border-top-color: #22e27a;
+}

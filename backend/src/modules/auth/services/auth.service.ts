@@ -89,3 +89,7 @@ export async function logout(rawRefreshToken: string | undefined): Promise<void>
   if (!rawRefreshToken) return;
   await refreshTokenModel.removeByHash(hashRefreshToken(rawRefreshToken));
 }
+
+export async function cerrarTodasSesiones(usuarioId: number): Promise<void> {
+  await refreshTokenModel.removeUserSessions(usuarioId);
+}

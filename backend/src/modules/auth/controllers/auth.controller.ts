@@ -2,6 +2,7 @@ import { CookieOptions, Request, Response } from 'express';
 import * as authService from '../services/auth.service';
 import * as googleAuthService from '../services/google-auth.service';
 import { asyncHandler } from '../../../utils/http';
+import { AuthRequest } from '../../../middleware/auth.middleware';
 import { BadRequestError } from '../../../utils/errors';
 import { env } from '../../../config/env';
 
@@ -75,4 +76,17 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   res.clearCookie('access_token', opcionesAccessToken());
   res.clearCookie('refresh_token', opcionesRefreshToken());
   res.status(204).send();
+});
+
+export const cerrarTodasSesiones = asyncHandler(async (req: Request, res: Response) => {
+  const reqAuth = req as AuthRequest;
+  if (reqAuth.userId === undefined) {
+    throw new BadRequestError('No se pudo identificar al usuario');
+  }
+
+  await authService.cerrarTodasSesiones(reqAuth.userId);
+
+  res.clearCookie('access_token', opcionesAccessToken());
+  res.clearCookie('refresh_token', opcionesRefreshToken());
+  res.json({ ok: true });
 });
