@@ -118,11 +118,10 @@ async function aplicarEfecto(
   tipo: transaccionModel.TipoTransaccion,
   montoGtq: number,
 ): Promise<void> {
+  const delta = tipo === 'ingreso' ? montoGtq : -montoGtq;
   if (destino.cuentaId > 0) {
-    const delta = tipo === 'ingreso' ? montoGtq : -montoGtq;
     await cuentasService.ajustarSaldo(usuarioId, destino.cuentaId, delta);
   } else if (destino.metaId > 0) {
-    const delta = tipo === 'egreso' ? montoGtq : -montoGtq;
     await metasService.ajustarMontoActual(usuarioId, destino.metaId, delta);
   }
 }
