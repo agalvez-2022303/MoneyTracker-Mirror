@@ -4,11 +4,24 @@
 CREATE TABLE IF NOT EXISTS usuarios (
   id            SERIAL PRIMARY KEY,
   email         TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT,
   rol           TEXT NOT NULL DEFAULT 'cliente' CHECK (rol IN ('admin', 'cliente')),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Migración idempotente para tablas existentes con password_hash NOT NULL
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'usuarios'
+      AND column_name = 'password_hash'
+      AND is_nullable = 'NO'
+  ) THEN
+    ALTER TABLE usuarios ALTER COLUMN password_hash DROP NOT NULL;
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS cuentas (
   id            SERIAL PRIMARY KEY,

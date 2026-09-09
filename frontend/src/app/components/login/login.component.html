@@ -90,6 +90,15 @@
         }
       </button>
 
+      <div class="login__divisor">
+        <span>o</span>
+      </div>
+
+      <div
+        #botonGoogle
+        class="login__google"
+        [class.login__google--deshabilitado]="enviando()"
+      ></div>
     </form>
   </div>
 </div>

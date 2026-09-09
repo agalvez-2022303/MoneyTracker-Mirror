@@ -52,10 +52,38 @@ export async function crear(datos: CrearUsuario): Promise<UsuarioPublico> {
   if (existente) throw new ConflictError('Ya existe un usuario con ese email');
 
   const passwordHash = await bcrypt.hash(datos.password, BCRYPT_ROUNDS);
-  const row = await usuarioModel.create({
+  return crearRow({
     email: datos.email,
     password_hash: passwordHash,
     rol: datos.rol ?? 'cliente',
+  });
+}
+
+export async function crearUsuarioOAuth(email: string): Promise<UsuarioPublico> {
+  try {
+    return await crearRow({
+      email,
+      password_hash: null,
+      rol: 'cliente',
+    });
+  } catch (error) {
+    if ((error as { code?: string })?.code === '23505') {
+      const existente = await usuarioModel.findByEmail(email);
+      if (existente) return toUsuarioPublico(existente);
+    }
+    throw error;
+  }
+}
+
+async function crearRow(datos: {
+  email: string;
+  password_hash: string | null;
+  rol: 'admin' | 'cliente';
+}): Promise<UsuarioPublico> {
+  const row = await usuarioModel.create({
+    email: datos.email,
+    password_hash: datos.password_hash,
+    rol: datos.rol,
   });
   return toUsuarioPublico(row);
 }

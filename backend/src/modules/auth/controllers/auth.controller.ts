@@ -1,5 +1,6 @@
 import { CookieOptions, Request, Response } from 'express';
 import * as authService from '../services/auth.service';
+import * as googleAuthService from '../services/google-auth.service';
 import { asyncHandler } from '../../../utils/http';
 import { BadRequestError } from '../../../utils/errors';
 import { env } from '../../../config/env';
@@ -36,6 +37,21 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const sesion = await authService.login(email.toLowerCase().trim(), password);
+
+  res.cookie('access_token', sesion.accessToken, opcionesAccessToken());
+  res.cookie('refresh_token', sesion.refreshToken, opcionesRefreshToken());
+
+  res.json({ usuario: sesion.usuario });
+});
+
+export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
+  const idToken = req.body?.idToken;
+
+  if (typeof idToken !== 'string' || idToken.length === 0) {
+    throw new BadRequestError('El campo "idToken" es obligatorio');
+  }
+
+  const sesion = await googleAuthService.loginConGoogle(idToken);
 
   res.cookie('access_token', sesion.accessToken, opcionesAccessToken());
   res.cookie('refresh_token', sesion.refreshToken, opcionesRefreshToken());

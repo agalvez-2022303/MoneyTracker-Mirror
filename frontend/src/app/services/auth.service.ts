@@ -26,6 +26,17 @@ export class AuthService {
       );
   }
 
+  loginConGoogle(idToken: string): Observable<UsuarioSesion> {
+    return this.http
+      .post<{ usuario: UsuarioSesion }>('/api/auth/google', { idToken })
+      .pipe(
+        map((r) => {
+          this.usuario.set(r.usuario);
+          return r.usuario;
+        })
+      );
+  }
+
   logout(): Observable<void> {
     return this.http.post<void>('/api/auth/logout', {}).pipe(map(() => this.usuario.set(null)));
   }

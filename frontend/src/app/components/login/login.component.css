@@ -180,6 +180,36 @@
 }
 .login__enviar:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.login__divisor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 18px;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.login__divisor::before,
+.login__divisor::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.login__google {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.login__google--deshabilitado {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .login__spinner {
   width: 16px;
   height: 16px;

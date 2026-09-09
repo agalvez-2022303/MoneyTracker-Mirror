@@ -20,7 +20,7 @@ export interface ResultadoLogin extends ResultadoSesion {
 
 export async function login(email: string, password: string): Promise<ResultadoLogin> {
   const usuario = await usuariosService.obtenerPorEmail(email);
-  if (!usuario) {
+  if (!usuario || !usuario.password_hash) {
     throw new UnauthorizedError('Credenciales inválidas');
   }
 
@@ -29,8 +29,12 @@ export async function login(email: string, password: string): Promise<ResultadoL
     throw new UnauthorizedError('Credenciales inválidas');
   }
 
+  return iniciarSesion(usuariosService.toUsuarioPublico(usuario));
+}
+
+export async function iniciarSesion(usuario: usuariosService.UsuarioPublico): Promise<ResultadoLogin> {
   return {
-    usuario: usuariosService.toUsuarioPublico(usuario),
+    usuario,
     accessToken: firmaAccessToken({ id: usuario.id, rol: usuario.rol }),
     refreshToken: await crearRefreshToken(usuario.id),
   };

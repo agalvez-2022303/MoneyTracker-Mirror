@@ -3,7 +3,7 @@ import { query } from '../../../config/db';
 export interface UsuarioRow {
   id: number;
   email: string;
-  password_hash: string;
+  password_hash: string | null;
   rol: 'admin' | 'cliente';
   created_at: Date;
   updated_at: Date;
@@ -11,7 +11,7 @@ export interface UsuarioRow {
 
 export interface NuevoUsuario {
   email: string;
-  password_hash: string;
+  password_hash?: string | null;
   rol: 'admin' | 'cliente';
 }
 
@@ -41,7 +41,7 @@ export async function create(datos: NuevoUsuario): Promise<UsuarioRow> {
     `INSERT INTO usuarios (email, password_hash, rol)
      VALUES ($1, $2, $3)
      RETURNING *`,
-    [datos.email, datos.password_hash, datos.rol],
+    [datos.email, datos.password_hash ?? null, datos.rol],
   );
   return rows[0];
 }
