@@ -1,0 +1,93 @@
+<app-ui-modal
+  titulo="Editar cuenta"
+  subtitulo="Actualiza los detalles de tu cuenta"
+  ancho="md"
+  (cerrado)="cerrar()"
+>
+  <form
+    id="form-editar-cuenta"
+    [formGroup]="formulario"
+    (ngSubmit)="enviar()"
+    class="flex flex-col gap-5 px-5 py-5 sm:px-6"
+    novalidate
+  >
+    <app-ui-input
+      formControlName="nombre"
+      etiqueta="Nombre"
+      placeholder="Ej. Billetera de casa"
+      [invalido]="!!err('nombre')"
+      [error]="err('nombre')"
+    />
+
+    <div>
+      <span class="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.08em] text-[#9CA3AF]">
+        Tipo de cuenta
+      </span>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Tipo de cuenta">
+        @for (t of tipos; track t.valor) {
+          <button
+            type="button"
+            (click)="setTipo(t.valor)"
+            [attr.aria-checked]="formulario.getRawValue().tipo === t.valor"
+            class="flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-xs font-medium transition-colors"
+            [class]="
+              formulario.getRawValue().tipo === t.valor
+                ? 'border-[#22E27A] bg-[#22E27A]/15 text-[#22E27A]'
+                : 'border-white/10 bg-[#121214] text-[#9CA3AF] hover:border-white/25 hover:text-[#F5F5F5]'
+            "
+          >
+            <svg [lucideIcon]="t.icono" size="17"></svg>
+            {{ t.texto }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <app-ui-area
+      formControlName="descripcion"
+      etiqueta="Descripción"
+      placeholder="Detalles opcionales de la cuenta"
+      [opcional]="true"
+    />
+
+    <app-ui-input
+      formControlName="monto"
+      etiqueta="Monto actual"
+      prefijo="Q"
+      tipo="number"
+      paso="0.01"
+      minimo="0"
+      placeholder="0.00"
+      [invalido]="!!err('monto')"
+      [error]="err('monto')"
+    />
+
+    @if (errorGlobal()) {
+      <p class="rounded-xl border border-[#EF4444]/30 bg-[#EF4444]/10 px-4 py-3 text-[13px] leading-snug text-[#EF4444]">
+        {{ errorGlobal() }}
+      </p>
+    }
+  </form>
+
+  <div ui-footer class="flex items-center justify-end gap-3 border-t border-white/5 bg-[#161619] px-5 py-4 sm:px-6">
+    <button
+      type="button"
+      (click)="cerrar()"
+      [disabled]="enviando()"
+      class="rounded-full border border-white/10 px-5 py-2.5 text-[13px] font-semibold text-[#9CA3AF] transition-colors hover:border-white/25 hover:text-[#F5F5F5] disabled:opacity-60"
+    >
+      Cancelar
+    </button>
+    <button
+      type="submit"
+      form="form-editar-cuenta"
+      [disabled]="formulario.invalid || enviando()"
+      class="inline-flex items-center gap-2 rounded-full bg-[#22E27A] px-5 py-2.5 text-[13px] font-semibold text-[#121214] transition-transform enabled:active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (enviando()) {
+        <span class="dash-spinner"></span>
+      }
+      Guardar cambios
+    </button>
+  </div>
+</app-ui-modal>

@@ -12,11 +12,22 @@ export interface CrearCuentaDatos {
   monto_inicial: number;
 }
 
+export interface ActualizarCuentaDatos {
+  nombre?: string;
+  tipo?: TipoCuenta;
+  descripcion?: string | null;
+  monto_actual?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CuentasService {
   private readonly http = inject(HttpClient);
 
   crear(datos: CrearCuentaDatos): Observable<CuentaResumen> {
     return this.http.post<{ cuenta: CuentaResumen }>('/api/cuentas', datos).pipe(map((r) => r.cuenta));
+  }
+
+  actualizar(id: number, datos: ActualizarCuentaDatos): Observable<CuentaResumen> {
+    return this.http.put<{ cuenta: CuentaResumen }>(`/api/cuentas/${id}`, datos).pipe(map((r) => r.cuenta));
   }
 }

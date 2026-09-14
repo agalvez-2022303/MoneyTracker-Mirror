@@ -155,7 +155,7 @@
               <ul class="flex w-full flex-col gap-2">
                 @for (s of segmentosCuentas; track s.id) {
                   <li
-                    class="flex items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors"
+                    class="group flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors"
                     [class]="
                       seleccionCuenta()?.id === s.id
                         ? 'border-white/20 bg-white/5'
@@ -163,12 +163,19 @@
                     "
                     (mouseenter)="alPasarCuenta(s)"
                     (mouseleave)="alSalirCuenta()"
+                    (click)="abrirEdicion(s.id)"
                   >
                     <span class="size-2.5 shrink-0 rounded-full" [style.background]="s.color"></span>
                     <span class="truncate text-[#F5F5F5]">{{ s.nombre }}</span>
                     <span class="ml-auto shrink-0 text-xs text-[#9CA3AF]">{{ redondear(s.pct) }}%</span>
                     <span class="w-20 shrink-0 text-right text-xs font-semibold">
                       {{ formatearMonto(s.valor) }}
+                    </span>
+                    <span
+                      title="Editar cuenta"
+                      class="shrink-0 text-[#71717A] transition-colors group-hover:text-[#F5F5F5]"
+                    >
+                      <svg lucidePencil size="14"></svg>
                     </span>
                   </li>
                 }
@@ -282,4 +289,16 @@
       </section>
     }
   </main>
+
+  @if (cuentaEnEdicion(); as cuenta) {
+    <app-editar-cuenta
+      [cuenta]="cuenta"
+      (guardada)="alEditar()"
+      (cerrado)="cerrarEdicion()"
+    ></app-editar-cuenta>
+  }
+
+  @if (toast()) {
+    <div class="ui-toast" role="status">{{ toast() }}</div>
+  }
 </div>
