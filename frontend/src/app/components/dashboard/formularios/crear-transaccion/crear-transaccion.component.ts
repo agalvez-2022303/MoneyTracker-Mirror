@@ -75,6 +75,15 @@ export class CrearTransaccionComponent {
       this.formulario.controls.destino.setValue(`m${this.metas()[0].id}`);
     }
 
+    this.formulario.valueChanges.subscribe(() => {
+      const aviso = this.avisoFondos();
+      if (aviso) {
+        this.errorGlobal.set(aviso);
+      } else if (this.errorGlobal().startsWith('No tan rápido')) {
+        this.errorGlobal.set('');
+      }
+    });
+
     this.formulario.controls.categoria.valueChanges.subscribe((v) => {
       const otro = this.formulario.controls.categoriaOtro;
       if (v === 'otro') {
@@ -120,17 +129,30 @@ export class CrearTransaccionComponent {
 
   avisoFondos(): string | null {
     const v = this.formulario.getRawValue();
-    if (v.tipo !== 'egreso' || !v.destino.startsWith('c')) return null;
+    if (v.tipo !== 'egreso') return null;
 
     const montoGtq = Math.round(Number(v.cantidad) * this.tasaActual() * 100) / 100;
-    const cuenta = this.cuentas().find((c) => c.id === Number(v.destino.slice(1)));
-    if (!cuenta || montoGtq <= cuenta.montoActual) return null;
-
     const q = (n: number) => `Q${n.toFixed(2)}`;
-    return (
-      `No tan rápido velocista: querés gastar ${q(montoGtq)} pero tu cuenta "${cuenta.nombre}" solo tiene ${q(cuenta.montoActual)}. ` +
-      `Revisá si estás colocando bien la cantidad o reconsiderá la compra antes de quedar en banca rota.`
-    );
+
+    if (v.destino.startsWith('c')) {
+      const cuenta = this.cuentas().find((c) => c.id === Number(v.destino.slice(1)));
+      if (!cuenta || montoGtq <= cuenta.montoActual) return null;
+      return (
+        `No tan rápido velocista: querés gastar ${q(montoGtq)} pero tu cuenta "${cuenta.nombre}" solo tiene ${q(cuenta.montoActual)}. ` +
+        `Revisá si estás colocando bien la cantidad o reconsiderá la compra antes de quedar en banca rota.`
+      );
+    }
+
+    if (v.destino.startsWith('m')) {
+      const meta = this.metas().find((m) => m.id === Number(v.destino.slice(1)));
+      if (!meta || montoGtq <= meta.montoActual) return null;
+      return (
+        `No tan rápido velocista: querés sacar ${q(montoGtq)} de tu meta "${meta.nombre}" pero solo tiene ahorrado ${q(meta.montoActual)}. ` +
+        `Revisá la cantidad o reconsiderá el retiro antes de quedar en banca rota.`
+      );
+    }
+
+    return null;
   }
 
   enviar(): void {

@@ -116,20 +116,31 @@ function formatearQ(monto: number): string {
   return `Q${monto.toFixed(2)}`;
 }
 
-async function validarEgresoCuenta(
+async function validarEgresoSaldo(
   usuarioId: number,
-  cuentaId: number,
+  destino: { cuentaId: number; metaId: number },
   tipo: transaccionModel.TipoTransaccion,
   montoGtq: number,
 ): Promise<void> {
-  if (tipo !== 'egreso' || cuentaId <= 0) return;
+  if (tipo !== 'egreso') return;
 
-  const cuenta = await cuentasService.obtenerPorId(usuarioId, cuentaId);
-  const saldo = toNumber(cuenta.montoActual);
-  if (montoGtq > saldo) {
+  if (destino.cuentaId > 0) {
+    const cuenta = await cuentasService.obtenerPorId(usuarioId, destino.cuentaId);
+    const saldo = toNumber(cuenta.montoActual);
+    if (montoGtq <= saldo) return;
     throw new BadRequestError(
       `No tan rápido velocista: querés gastar ${formatearQ(montoGtq)} pero tu cuenta "${cuenta.nombre}" solo tiene ${formatearQ(saldo)}. ` +
       `Revisá si estás colocando bien la cantidad o reconsiderá la compra antes de quedar en banca rota.`
+    );
+  }
+
+  if (destino.metaId > 0) {
+    const meta = await metasService.obtenerPorId(usuarioId, destino.metaId);
+    const ahorrado = toNumber(meta.montoActual);
+    if (montoGtq <= ahorrado) return;
+    throw new BadRequestError(
+      `No tan rápido velocista: querés sacar ${formatearQ(montoGtq)} de tu meta "${meta.nombre}" pero solo tiene ahorrado ${formatearQ(ahorrado)}. ` +
+      `Revisá la cantidad o reconsiderá el retiro antes de quedar en banca rota.`
     );
   }
 }
@@ -178,7 +189,7 @@ export async function crear(usuarioId: number, datos: CrearTransaccion): Promise
   const destino = await validarDestino(usuarioId, datos.cuentaId, datos.metaId);
   const montoGtq = construirMonto(moneda, tasa, datos.montoOriginal);
 
-  await validarEgresoCuenta(usuarioId, destino.cuentaId, datos.tipo, montoGtq);
+  await validarEgresoSaldo(usuarioId, destino, datos.tipo, montoGtq);
 
   const row = await transaccionModel.create({
     usuarioId,
@@ -228,7 +239,7 @@ export async function actualizar(usuarioId: number, id: number, datos: Actualiza
     toNumber(actual.monto_gtq) * -1,
   );
 
-  await validarEgresoCuenta(usuarioId, cuentaId ?? -1, tipo, montoGtq);
+  await validarEgresoSaldo(usuarioId, { cuentaId: cuentaId ?? -1, metaId: metaId ?? -1 }, tipo, montoGtq);
 
   await aplicarEfecto(usuarioId, { cuentaId: cuentaId ?? -1, metaId: metaId ?? -1 }, tipo, montoGtq);
 
