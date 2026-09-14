@@ -1,43 +1,32 @@
 <div class="min-h-dvh w-full overflow-x-hidden bg-[#121214] text-[#F5F5F5]">
-  <header class="sticky top-0 z-40 border-b border-white/5 bg-[#121214]/90 backdrop-blur">
-    <nav class="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
-      <div class="flex items-center gap-3 text-xs font-medium sm:gap-6 sm:text-[13px]">
-        <a routerLink="/dashboard" routerLinkActive="text-[#22E27A]" [routerLinkActiveOptions]="{ exact: true }" class="transition-colors hover:text-[#22E27A]">Inicio</a>
-        <a routerLink="/historial" routerLinkActive="text-[#22E27A]" class="hidden text-[#9CA3AF] transition-colors hover:text-[#22E27A] sm:inline">Historial</a>
-        <a routerLink="/estadisticas" routerLinkActive="text-[#22E27A]" class="hidden text-[#9CA3AF] transition-colors hover:text-[#22E27A] sm:inline">Estadísticas</a>
-        <a routerLink="/configuracion" routerLinkActive="text-[#22E27A]" class="text-[#9CA3AF] transition-colors hover:text-[#22E27A]">Configuración</a>
-      </div>
+  <app-top-nav>
+    <button
+      type="button"
+      (click)="alternarPrivacidad()"
+      class="flex size-9 shrink-0 items-center justify-center rounded-full text-[#9CA3AF] transition-colors hover:text-[#22E27A]"
+      [attr.aria-label]="ocultarMontos ? 'Mostrar montos' : 'Ocultar montos'"
+    >
+      @if (ocultarMontos) {
+        <svg lucideEyeOff size="17"></svg>
+      } @else {
+        <svg lucideEye size="17"></svg>
+      }
+    </button>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button
-          type="button"
-          (click)="alternarPrivacidad()"
-          class="flex size-9 shrink-0 items-center justify-center rounded-full text-[#9CA3AF] transition-colors hover:text-[#22E27A]"
-          [attr.aria-label]="ocultarMontos ? 'Mostrar montos' : 'Ocultar montos'"
-        >
-          @if (ocultarMontos) {
-            <svg lucideEyeOff size="17"></svg>
-          } @else {
-            <svg lucideEye size="17"></svg>
-          }
-        </button>
-
-        <button
-          type="button"
-          (click)="cerrarSesion()"
-          [disabled]="saliendo"
-          class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#22E27A] px-4 py-2 text-xs font-semibold text-[#121214] disabled:opacity-60 sm:px-5 sm:text-[13px]"
-        >
-          @if (saliendo) {
-            <span class="dash-spinner"></span>
-          } @else {
-            <svg lucideLogOut size="15"></svg>
-          }
-          Cerrar sesion
-        </button>
-      </div>
-    </nav>
-  </header>
+    <button
+      type="button"
+      (click)="cerrarSesion()"
+      [disabled]="saliendo"
+      class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#22E27A] px-4 py-2 text-xs font-semibold text-[#121214] disabled:opacity-60 sm:px-5 sm:text-[13px]"
+    >
+      @if (saliendo) {
+        <span class="dash-spinner"></span>
+      } @else {
+        <svg lucideLogOut size="15"></svg>
+      }
+      Cerrar sesión
+    </button>
+  </app-top-nav>
 
   <main class="mx-auto w-full max-w-5xl px-6 py-10">
     @let d = data();

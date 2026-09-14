@@ -2,13 +2,13 @@ import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   LucideArrowDown,
-  LucideArrowLeft,
   LucideLogOut,
   LucideTarget,
   LucideWallet,
 } from '@lucide/angular';
 import { AuthService } from '../../services/auth.service';
 import { DashboardService, type DashboardData } from '../../services/dashboard.service';
+import { TopNavComponent } from '../top-nav/top-nav.component';
 
 const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
 const COLORES_DONUT = [
@@ -73,8 +73,8 @@ function construirSegmentos(entradas: EntradaDonut[]): SegmentoDonut[] {
   standalone: true,
   imports: [
     RouterLink,
+    TopNavComponent,
     LucideArrowDown,
-    LucideArrowLeft,
     LucideLogOut,
     LucideTarget,
     LucideWallet,

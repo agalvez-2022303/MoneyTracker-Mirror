@@ -1,5 +1,5 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import type { LucideIcon } from '@lucide/angular';
 import {
   LucideArrowDown,
@@ -22,6 +22,7 @@ import { FabMenuComponent } from '../dashboard/fab-menu/fab-menu.component';
 import { CrearMetaComponent } from '../dashboard/formularios/crear-meta/crear-meta.component';
 import { CrearCuentaComponent } from '../dashboard/formularios/crear-cuenta/crear-cuenta.component';
 import { CrearTransaccionComponent } from '../dashboard/formularios/crear-transaccion/crear-transaccion.component';
+import { TopNavComponent } from '../top-nav/top-nav.component';
 
 const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
 
@@ -29,8 +30,6 @@ const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    RouterLink,
-    RouterLinkActive,
     LucideDynamicIcon,
     LucideArrowDown,
     LucideArrowUp,
@@ -42,6 +41,7 @@ const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
     CrearMetaComponent,
     CrearCuentaComponent,
     CrearTransaccionComponent,
+    TopNavComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],

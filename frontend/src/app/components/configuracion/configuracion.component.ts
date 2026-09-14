@@ -1,10 +1,9 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   LucideAlertTriangle,
-  LucideArrowLeft,
   LucideCheck,
   LucideDownload,
   LucideLock,
@@ -14,6 +13,7 @@ import {
 import { AuthService, UsuarioSesion } from '../../services/auth.service';
 import { ConfiguracionService } from '../../services/configuracion.service';
 import { UiModalComponent } from '../ui/modal/ui-modal.component';
+import { TopNavComponent } from '../top-nav/top-nav.component';
 
 const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
 
@@ -29,11 +29,10 @@ function mensajeError(err: HttpErrorResponse | unknown, fallback: string): strin
   selector: 'app-configuracion',
   standalone: true,
   imports: [
-    RouterLink,
     ReactiveFormsModule,
     UiModalComponent,
+    TopNavComponent,
     LucideAlertTriangle,
-    LucideArrowLeft,
     LucideCheck,
     LucideDownload,
     LucideLock,
