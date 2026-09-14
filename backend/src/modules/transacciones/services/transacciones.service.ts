@@ -112,6 +112,28 @@ function construirMonto(moneda: string, tasa: number, montoOriginal: number): nu
   return Math.round((montoOriginal * tasa) * 100) / 100;
 }
 
+function formatearQ(monto: number): string {
+  return `Q${monto.toFixed(2)}`;
+}
+
+async function validarEgresoCuenta(
+  usuarioId: number,
+  cuentaId: number,
+  tipo: transaccionModel.TipoTransaccion,
+  montoGtq: number,
+): Promise<void> {
+  if (tipo !== 'egreso' || cuentaId <= 0) return;
+
+  const cuenta = await cuentasService.obtenerPorId(usuarioId, cuentaId);
+  const saldo = toNumber(cuenta.montoActual);
+  if (montoGtq > saldo) {
+    throw new BadRequestError(
+      `No tan rápido velocista: querés gastar ${formatearQ(montoGtq)} pero tu cuenta "${cuenta.nombre}" solo tiene ${formatearQ(saldo)}. ` +
+      `Revisá si estás colocando bien la cantidad o reconsiderá la compra antes de quedar en banca rota.`
+    );
+  }
+}
+
 async function aplicarEfecto(
   usuarioId: number,
   destino: { cuentaId: number; metaId: number },
@@ -155,6 +177,8 @@ export async function crear(usuarioId: number, datos: CrearTransaccion): Promise
   const { moneda, tasa } = validarMoneda(datos.monedaOriginal, datos.tasaCambioUsada);
   const destino = await validarDestino(usuarioId, datos.cuentaId, datos.metaId);
   const montoGtq = construirMonto(moneda, tasa, datos.montoOriginal);
+
+  await validarEgresoCuenta(usuarioId, destino.cuentaId, datos.tipo, montoGtq);
 
   const row = await transaccionModel.create({
     usuarioId,
@@ -203,6 +227,8 @@ export async function actualizar(usuarioId: number, id: number, datos: Actualiza
     actual.tipo,
     toNumber(actual.monto_gtq) * -1,
   );
+
+  await validarEgresoCuenta(usuarioId, cuentaId ?? -1, tipo, montoGtq);
 
   await aplicarEfecto(usuarioId, { cuentaId: cuentaId ?? -1, metaId: metaId ?? -1 }, tipo, montoGtq);
 

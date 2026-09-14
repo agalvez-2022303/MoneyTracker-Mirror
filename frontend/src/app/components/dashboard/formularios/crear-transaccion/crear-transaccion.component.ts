@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { UiModalComponent } from '../../../ui/modal/ui-modal.component';
 import { UiInputComponent } from '../../../ui/campo/ui-input.component';
 import { UiSelectComponent } from '../../../ui/campo/ui-select.component';
@@ -117,9 +118,31 @@ export class CrearTransaccionComponent {
     if (!this.enviando()) this.cerrado.emit();
   }
 
+  avisoFondos(): string | null {
+    const v = this.formulario.getRawValue();
+    if (v.tipo !== 'egreso' || !v.destino.startsWith('c')) return null;
+
+    const montoGtq = Math.round(Number(v.cantidad) * this.tasaActual() * 100) / 100;
+    const cuenta = this.cuentas().find((c) => c.id === Number(v.destino.slice(1)));
+    if (!cuenta || montoGtq <= cuenta.montoActual) return null;
+
+    const q = (n: number) => `Q${n.toFixed(2)}`;
+    return (
+      `No tan rápido velocista: querés gastar ${q(montoGtq)} pero tu cuenta "${cuenta.nombre}" solo tiene ${q(cuenta.montoActual)}. ` +
+      `Revisá si estás colocando bien la cantidad o reconsiderá la compra antes de quedar en banca rota.`
+    );
+  }
+
   enviar(): void {
     this.formulario.markAllAsTouched();
     if (this.formulario.invalid) return;
+
+    const aviso = this.avisoFondos();
+    if (aviso) {
+      this.errorGlobal.set(aviso);
+      return;
+    }
+
     this.enviando.set(true);
     this.errorGlobal.set('');
 
@@ -143,9 +166,10 @@ export class CrearTransaccionComponent {
           this.enviando.set(false);
           this.registrada.emit();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.enviando.set(false);
-          this.errorGlobal.set('No se pudo registrar la transacción. Inténtelo de nuevo.');
+          const mensaje = typeof err.error === 'string' ? err.error : err.error?.error;
+          this.errorGlobal.set(mensaje || 'No se pudo registrar la transacción. Inténtelo de nuevo.');
         },
       });
   }
