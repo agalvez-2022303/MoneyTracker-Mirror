@@ -13,6 +13,7 @@ import {
 import { AuthService } from '../../services/auth.service';
 import {
   DashboardService,
+  type CuentaResumen,
   type DashboardData,
   type MetaResumen,
 } from '../../services/dashboard.service';
@@ -100,12 +101,35 @@ export class DashboardComponent implements OnInit {
     return this.metaPrincipal?.progreso ?? 0;
   }
 
+  get cuentaPrincipal(): CuentaResumen | null {
+    const cuentas = this.data()?.cuentas ?? [];
+    if (cuentas.length === 0) return null;
+    return (
+      cuentas.find((c) => c.nombre.toLowerCase() === 'general') ??
+      cuentas.reduce((menor, c) => (c.id < menor.id ? c : menor))
+    );
+  }
+
+  get montoCuentaPrincipal(): number {
+    return this.cuentaPrincipal?.montoActual ?? 0;
+  }
+
+  get totalDineroCuentas(): number {
+    return (this.data()?.cuentas ?? []).reduce((acc, c) => acc + c.montoActual, 0);
+  }
+
+  get porcentajeCuenta(): number {
+    const total = this.totalDineroCuentas;
+    if (total <= 0) return 0;
+    return Math.min(Math.round((this.montoCuentaPrincipal / total) * 100), 100);
+  }
+
   get circunferenciaDonut(): number {
     return 2 * Math.PI * this.radioDonut;
   }
 
   get desplazamientoDonut(): number {
-    return this.circunferenciaDonut * (1 - this.progresoMeta / 100);
+    return this.circunferenciaDonut * (1 - this.porcentajeCuenta / 100);
   }
 
   formatearMonto(valor: number | null | undefined): string {
