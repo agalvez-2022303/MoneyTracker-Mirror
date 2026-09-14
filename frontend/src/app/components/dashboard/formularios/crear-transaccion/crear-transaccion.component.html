@@ -50,6 +50,15 @@
       </div>
     </div>
 
+    @if (errorGlobal()) {
+      <p
+        class="rounded-xl border border-[#EF4444]/40 bg-[#EF4444]/15 px-4 py-3 text-[13px] font-medium leading-snug text-[#EF4444]"
+        role="alert"
+      >
+        {{ errorGlobal() }}
+      </p>
+    }
+
     <div>
       <app-ui-select
         formControlName="destino"
@@ -132,16 +141,10 @@
 
     <app-ui-area
       formControlName="descripcion"
-      etiqueta="Descripcion"
+      etiqueta="Descripción"
       placeholder="Detalles opcionales"
       [opcional]="true"
     />
-
-    @if (errorGlobal()) {
-      <p class="rounded-xl border border-[#EF4444]/30 bg-[#EF4444]/10 px-4 py-3 text-[13px] leading-snug text-[#EF4444]">
-        {{ errorGlobal() }}
-      </p>
-    }
   </form>
 
   <div ui-footer class="flex items-center justify-end gap-3 border-t border-white/5 bg-[#161619] px-5 py-4 sm:px-6">

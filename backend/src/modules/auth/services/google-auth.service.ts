@@ -4,7 +4,7 @@ import * as authService from './auth.service';
 import { env } from '../../../config/env';
 import { UnauthorizedError } from '../../../utils/errors';
 
-const oauthClient = new OAuth2Client(env.google.clientId, env.google.clientSecret);
+const oauthClient = new OAuth2Client(env.google.clientId);
 
 async function verificarEmailGoogle(idToken: string): Promise<{ email: string; nombre: string | null }> {
   let payload: { email?: string; email_verified?: boolean; name?: string } | undefined;

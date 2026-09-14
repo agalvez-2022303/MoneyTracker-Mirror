@@ -1,10 +1,11 @@
 <app-ui-modal
-  titulo="Nueva cuenta"
-  subtitulo="Agrega una cuenta para organizar tu dinero"
+  titulo="Editar cuenta"
+  subtitulo="Actualiza los detalles de tu cuenta"
+  ancho="md"
   (cerrado)="cerrar()"
 >
   <form
-    id="form-cuenta"
+    id="form-editar-cuenta"
     [formGroup]="formulario"
     (ngSubmit)="enviar()"
     class="flex flex-col gap-5 px-5 py-5 sm:px-6"
@@ -49,36 +50,17 @@
       [opcional]="true"
     />
 
-    <div class="flex flex-col gap-2">
-      <app-ui-input
-        formControlName="montoFijo"
-        etiqueta="Cantidad fija"
-        prefijo="Q"
-        tipo="number"
-        paso="0.01"
-        minimo="0"
-        placeholder="0.00 (opcional)"
-        [opcional]="true"
-        [invalido]="!!err('montoFijo')"
-        [error]="err('montoFijo')"
-      />
-      <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo de ajuste">
-        @for (op of operaciones; track op.valor) {
-          <button
-            type="button"
-            (click)="setOperacion(op.valor)"
-            class="rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-colors"
-            [class]="
-              formulario.getRawValue().operacion === op.valor
-                ? 'border-[#22E27A] bg-[#22E27A]/15 text-[#22E27A]'
-                : 'border-white/10 text-[#9CA3AF] hover:border-white/25 hover:text-[#F5F5F5]'
-            "
-          >
-            {{ op.texto }}
-          </button>
-        }
-      </div>
-    </div>
+    <app-ui-input
+      formControlName="monto"
+      etiqueta="Monto actual"
+      prefijo="Q"
+      tipo="number"
+      paso="0.01"
+      minimo="0"
+      placeholder="0.00"
+      [invalido]="!!err('monto')"
+      [error]="err('monto')"
+    />
 
     @if (errorGlobal()) {
       <p class="rounded-xl border border-[#EF4444]/30 bg-[#EF4444]/10 px-4 py-3 text-[13px] leading-snug text-[#EF4444]">
@@ -98,14 +80,14 @@
     </button>
     <button
       type="submit"
-      form="form-cuenta"
+      form="form-editar-cuenta"
       [disabled]="formulario.invalid || enviando()"
       class="inline-flex items-center gap-2 rounded-full bg-[#22E27A] px-5 py-2.5 text-[13px] font-semibold text-[#121214] transition-transform enabled:active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
     >
       @if (enviando()) {
         <span class="dash-spinner"></span>
       }
-      Crear cuenta
+      Guardar cambios
     </button>
   </div>
 </app-ui-modal>

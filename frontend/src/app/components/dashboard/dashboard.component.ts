@@ -1,5 +1,5 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import type { LucideIcon } from '@lucide/angular';
 import {
   LucideArrowDown,
@@ -13,6 +13,7 @@ import {
 import { AuthService } from '../../services/auth.service';
 import {
   DashboardService,
+  type CuentaResumen,
   type DashboardData,
   type MetaResumen,
 } from '../../services/dashboard.service';
@@ -21,6 +22,7 @@ import { FabMenuComponent } from '../dashboard/fab-menu/fab-menu.component';
 import { CrearMetaComponent } from '../dashboard/formularios/crear-meta/crear-meta.component';
 import { CrearCuentaComponent } from '../dashboard/formularios/crear-cuenta/crear-cuenta.component';
 import { CrearTransaccionComponent } from '../dashboard/formularios/crear-transaccion/crear-transaccion.component';
+import { TopNavComponent } from '../top-nav/top-nav.component';
 
 const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
 
@@ -28,8 +30,6 @@ const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    RouterLink,
-    RouterLinkActive,
     LucideDynamicIcon,
     LucideArrowDown,
     LucideArrowUp,
@@ -41,6 +41,7 @@ const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
     CrearMetaComponent,
     CrearCuentaComponent,
     CrearTransaccionComponent,
+    TopNavComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
@@ -100,12 +101,39 @@ export class DashboardComponent implements OnInit {
     return this.metaPrincipal?.progreso ?? 0;
   }
 
+  get sinMetas(): boolean {
+    return (this.data()?.metas?.length ?? 0) === 0;
+  }
+
+  get cuentaPrincipal(): CuentaResumen | null {
+    const cuentas = this.data()?.cuentas ?? [];
+    if (cuentas.length === 0) return null;
+    return (
+      cuentas.find((c) => c.nombre.toLowerCase() === 'general') ??
+      cuentas.reduce((menor, c) => (c.id < menor.id ? c : menor))
+    );
+  }
+
+  get montoCuentaPrincipal(): number {
+    return this.cuentaPrincipal?.montoActual ?? 0;
+  }
+
+  get totalDineroCuentas(): number {
+    return (this.data()?.cuentas ?? []).reduce((acc, c) => acc + c.montoActual, 0);
+  }
+
+  get porcentajeCuenta(): number {
+    const total = this.totalDineroCuentas;
+    if (total <= 0) return 0;
+    return Math.min(Math.round((this.montoCuentaPrincipal / total) * 100), 100);
+  }
+
   get circunferenciaDonut(): number {
     return 2 * Math.PI * this.radioDonut;
   }
 
   get desplazamientoDonut(): number {
-    return this.circunferenciaDonut * (1 - this.progresoMeta / 100);
+    return this.circunferenciaDonut * (1 - this.porcentajeCuenta / 100);
   }
 
   formatearMonto(valor: number | null | undefined): string {
