@@ -101,6 +101,10 @@ export class DashboardComponent implements OnInit {
     return this.metaPrincipal?.progreso ?? 0;
   }
 
+  get sinMetas(): boolean {
+    return (this.data()?.metas?.length ?? 0) === 0;
+  }
+
   get cuentaPrincipal(): CuentaResumen | null {
     const cuentas = this.data()?.cuentas ?? [];
     if (cuentas.length === 0) return null;
