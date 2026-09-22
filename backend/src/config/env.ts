@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const REQUIRED_VARS = ['PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'PG_DATABASE', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'];
+const REQUIRED_VARS = ['PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'PG_DATABASE', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'GOOGLE_CLIENT_ID'];
 
 for (const key of REQUIRED_VARS) {
   if (!process.env[key]) {
@@ -31,7 +31,7 @@ export const env = {
   adminPassword: process.env.ADMIN_PASSWORD,
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID as string,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   },
   auth: {
     jwtAccessSecret: process.env.JWT_ACCESS_SECRET as string,

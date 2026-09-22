@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { UiModalComponent } from '../../../ui/modal/ui-modal.component';
 import { UiInputComponent } from '../../../ui/campo/ui-input.component';
 import { UiSelectComponent } from '../../../ui/campo/ui-select.component';
@@ -74,6 +75,15 @@ export class CrearTransaccionComponent {
       this.formulario.controls.destino.setValue(`m${this.metas()[0].id}`);
     }
 
+    this.formulario.valueChanges.subscribe(() => {
+      const aviso = this.avisoFondos();
+      if (aviso) {
+        this.errorGlobal.set(aviso);
+      } else if (this.errorGlobal().startsWith('No tan rápido')) {
+        this.errorGlobal.set('');
+      }
+    });
+
     this.formulario.controls.categoria.valueChanges.subscribe((v) => {
       const otro = this.formulario.controls.categoriaOtro;
       if (v === 'otro') {
@@ -117,9 +127,44 @@ export class CrearTransaccionComponent {
     if (!this.enviando()) this.cerrado.emit();
   }
 
+  avisoFondos(): string | null {
+    const v = this.formulario.getRawValue();
+    if (v.tipo !== 'egreso') return null;
+
+    const montoGtq = Math.round(Number(v.cantidad) * this.tasaActual() * 100) / 100;
+    const q = (n: number) => `Q${n.toFixed(2)}`;
+
+    if (v.destino.startsWith('c')) {
+      const cuenta = this.cuentas().find((c) => c.id === Number(v.destino.slice(1)));
+      if (!cuenta || montoGtq <= cuenta.montoActual) return null;
+      return (
+        `No tan rápido velocista: querés gastar ${q(montoGtq)} pero tu cuenta "${cuenta.nombre}" solo tiene ${q(cuenta.montoActual)}. ` +
+        `Revisá si estás colocando bien la cantidad o reconsiderá la compra antes de quedar en banca rota.`
+      );
+    }
+
+    if (v.destino.startsWith('m')) {
+      const meta = this.metas().find((m) => m.id === Number(v.destino.slice(1)));
+      if (!meta || montoGtq <= meta.montoActual) return null;
+      return (
+        `No tan rápido velocista: querés sacar ${q(montoGtq)} de tu meta "${meta.nombre}" pero solo tiene ahorrado ${q(meta.montoActual)}. ` +
+        `Revisá la cantidad o reconsiderá el retiro antes de quedar en banca rota.`
+      );
+    }
+
+    return null;
+  }
+
   enviar(): void {
     this.formulario.markAllAsTouched();
     if (this.formulario.invalid) return;
+
+    const aviso = this.avisoFondos();
+    if (aviso) {
+      this.errorGlobal.set(aviso);
+      return;
+    }
+
     this.enviando.set(true);
     this.errorGlobal.set('');
 
@@ -143,9 +188,10 @@ export class CrearTransaccionComponent {
           this.enviando.set(false);
           this.registrada.emit();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.enviando.set(false);
-          this.errorGlobal.set('No se pudo registrar la transacción. Inténtelo de nuevo.');
+          const mensaje = typeof err.error === 'string' ? err.error : err.error?.error;
+          this.errorGlobal.set(mensaje || 'No se pudo registrar la transacción. Inténtelo de nuevo.');
         },
       });
   }

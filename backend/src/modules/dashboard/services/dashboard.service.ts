@@ -14,8 +14,17 @@ export interface Dashboard {
 }
 
 export async function obtenerDashboard(usuarioId: number): Promise<Dashboard> {
-  const [cuentas, metas, ultimasTransacciones, resumenMes] = await Promise.all([
-    cuentasService.listar(usuarioId),
+  let cuentas = await cuentasService.listar(usuarioId);
+  if (cuentas.length === 0) {
+    await cuentasService.crear(usuarioId, {
+      nombre: 'General',
+      tipo: 'efectivo',
+      descripcion: 'Tu cuenta principal por defecto',
+    });
+    cuentas = await cuentasService.listar(usuarioId);
+  }
+
+  const [metas, ultimasTransacciones, resumenMes] = await Promise.all([
     metasService.listar(usuarioId),
     transaccionesService.listar(usuarioId, { limit: 10 }),
     transaccionModel.sumMesPorTipo(usuarioId),

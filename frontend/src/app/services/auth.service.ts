@@ -43,8 +43,11 @@ export class AuthService {
   }
 
   verificarSesion(): Observable<boolean> {
-    return this.http.get<{ dashboard: unknown }>('/api/dashboard').pipe(
-      map(() => true),
+    return this.http.get<{ usuario: UsuarioSesion }>('/api/usuarios/me').pipe(
+      map((r) => {
+        this.usuario.set(r.usuario);
+        return true;
+      }),
       catchError(() => of(false))
     );
   }

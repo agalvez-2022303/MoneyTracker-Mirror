@@ -2,13 +2,19 @@ import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   LucideArrowDown,
-  LucideArrowLeft,
   LucideLogOut,
+  LucidePencil,
   LucideTarget,
   LucideWallet,
 } from '@lucide/angular';
 import { AuthService } from '../../services/auth.service';
-import { DashboardService, type DashboardData } from '../../services/dashboard.service';
+import {
+  DashboardService,
+  type CuentaResumen,
+  type DashboardData,
+} from '../../services/dashboard.service';
+import { TopNavComponent } from '../top-nav/top-nav.component';
+import { EditarCuentaComponent } from './editar-cuenta/editar-cuenta.component';
 
 const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
 const COLORES_DONUT = [
@@ -73,9 +79,11 @@ function construirSegmentos(entradas: EntradaDonut[]): SegmentoDonut[] {
   standalone: true,
   imports: [
     RouterLink,
+    TopNavComponent,
+    EditarCuentaComponent,
     LucideArrowDown,
-    LucideArrowLeft,
     LucideLogOut,
+    LucidePencil,
     LucideTarget,
     LucideWallet,
   ],
@@ -95,11 +103,15 @@ export class EstadisticasComponent implements OnInit {
 
   readonly seleccionCuenta = signal<SegmentoDonut | null>(null);
   readonly seleccionMeta = signal<SegmentoDonut | null>(null);
+  readonly cuentaEnEdicion = signal<CuentaResumen | null>(null);
+  readonly toast = signal('');
+  private _toastTemporizador = 0;
 
   ocultarMontos = false;
 
   ngOnInit(): void {
     this.ocultarMontos = this.leerPrivacidad();
+    this.destroy.onDestroy(() => clearTimeout(this._toastTemporizador));
     this.cargar();
   }
 
@@ -184,6 +196,27 @@ export class EstadisticasComponent implements OnInit {
 
   alSalirMeta(): void {
     this.seleccionMeta.set(null);
+  }
+
+  abrirEdicion(id: number): void {
+    const cuenta = (this.data()?.cuentas ?? []).find((c) => c.id === id);
+    if (cuenta) this.cuentaEnEdicion.set(cuenta);
+  }
+
+  cerrarEdicion(): void {
+    this.cuentaEnEdicion.set(null);
+  }
+
+  alEditar(): void {
+    this.cerrarEdicion();
+    this.cargar();
+    this.mostrarToast('Cuenta actualizada correctamente');
+  }
+
+  private mostrarToast(mensaje: string): void {
+    clearTimeout(this._toastTemporizador);
+    this.toast.set(mensaje);
+    this._toastTemporizador = window.setTimeout(() => this.toast.set(''), 2600);
   }
 
   cerrarSesion(): void {

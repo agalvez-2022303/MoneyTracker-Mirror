@@ -1,11 +1,10 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import type { LucideIcon } from '@lucide/angular';
 import {
   LucideAlertTriangle,
   LucideArrowDown,
-  LucideArrowLeft,
   LucideArrowUp,
   LucideDynamicIcon,
   LucideLogOut,
@@ -23,6 +22,7 @@ import {
 } from '../../services/transacciones.service';
 import { UiModalComponent } from '../ui/modal/ui-modal.component';
 import type { TransaccionReciente } from '../../services/dashboard.service';
+import { TopNavComponent } from '../top-nav/top-nav.component';
 
 const COOKIE_PRIVACIDAD = 'mt_dashboard_privacidad';
 const LIMITE_PAGINA = 50;
@@ -47,11 +47,10 @@ function mensajeError(err: HttpErrorResponse | unknown, fallback: string): strin
   selector: 'app-historial',
   standalone: true,
   imports: [
-    RouterLink,
     UiModalComponent,
+    TopNavComponent,
     LucideAlertTriangle,
     LucideArrowDown,
-    LucideArrowLeft,
     LucideArrowUp,
     LucideDynamicIcon,
     LucideLogOut,
