@@ -47,7 +47,7 @@ npm run start
 Abre `http://localhost:4200` en tu navegador.
 
 ## Usuario admin
-
+**Dos Usuarios**
 El bootstrap crea un usuario administrador con el email y password que definiste en `ADMIN_EMAIL` y `ADMIN_PASSWORD`. Con el puedes iniciar sesion y probar todo el flujo.
 
 ## Funciones principales
